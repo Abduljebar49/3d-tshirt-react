@@ -1,21 +1,28 @@
 import { Decal, useGLTF, useTexture } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { easing } from "maath";
-import React from "react";
+import React, { useRef } from "react";
 import { useSnapshot } from "valtio";
 import state from "../store";
 
 const Shirt = () => {
   const snap = useSnapshot(state);
   const { nodes, materials } = useGLTF("/shirt_baked.glb");
+  const logoRef = useRef();
 
   const logoTexture = useTexture(snap.logoDecal);
   const fullTexture = useTexture(snap.fullDecal);
 
-  useFrame((state, delta) =>
-    easing.dampC(materials.lambert1.color, snap.color, 0.25, delta)
-  );
+  useFrame((state, delta) => {
+    easing.dampC(materials.lambert1.color, snap.color, 0.25, delta);
+    if (logoRef.current) {
+      const mouseX = (state.mouse.x * window.innerWidth) / 2;
+      const mouseY = (state.mouse.y * window.innerHeight) / 2;
 
+      logoRef.current.position.x = (mouseX / window.innerWidth) * 2 - 1;
+      logoRef.current.position.y = -(mouseY / window.innerHeight) * 2 + 1;
+    }
+  });
   const stateString = JSON.stringify(snap);
 
   return (
